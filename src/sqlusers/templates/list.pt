@@ -1,0 +1,6 @@
+<ul>
+  <li tal:repeat="user context">
+    <a href="" tal:attributes="href view.base + '/' + user.__name__"
+       tal:content="user.login" />
+  </li>
+</ul>

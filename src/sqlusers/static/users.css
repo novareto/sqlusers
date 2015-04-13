@@ -1,0 +1,32 @@
+#search-batch {
+  padding: 1em 0;
+  clear: both;
+}
+
+.batch ul li {
+  display: inline;
+  font-size: 0.9em;
+}
+
+.batch ul li.current a {
+  padding: 0.1em 0.2em;
+  font-weight: bold;
+  border: 2px solid #aaa;
+  background-color: #eee;
+}
+
+.batch ul li a:hover {
+  background-color: #e4e4e4;
+}
+
+.batch ul li:hover a {
+  color: #000;
+}
+
+.batch ul li a {
+  border: 1px solid #ddd;
+  background-color: #f4f4f4;
+  padding: 0.1em 0.2em;
+  margin: 0.1em;
+  color: #666;
+}
