@@ -3,7 +3,11 @@
     xmlns:grok="http://namespaces.zope.org/grok">
 
   <include package="uvclight" />
+  <include package="ul.auth" />
+  <include package="dolmen.forms.crud" />
+  <include package="cromlech.i18n" file="default.zcml" />
   <include package="uvc.themes.dguv" />
+  <include package="dolmen.message" />
   <grok:grok package="." />
 
 </configure>

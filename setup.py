@@ -20,6 +20,7 @@ setup(name='sqlusers',
       install_requires=[
           'psycopg2',
           'dolmen.batch',
+          'uvc.themes.btwidgets',
           'dolmen.sqlcontainer',
           'uvclight[auth]',
           'uvclight[sql]',

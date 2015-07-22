@@ -1,6 +1,6 @@
 <div class="batch" i18n:domain="batch">
   <ul>
-    <li i18n:translate="">Pages&nbsp;&nbsp;</li>
+    <li i18n:translate="">Seite&nbsp;&nbsp;</li>
     <li tal:repeat="info batcher.get_batches()"
 	tal:attributes="class info[0]">
       <span tal:condition="info[0] == 'ellipsis'"

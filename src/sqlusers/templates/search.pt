@@ -3,9 +3,9 @@
   <div id="search" tal:define="results list(view.results)">
     <p class="bigger fatter">
       <a href="" tal:attributes="href view.base + '/' + view.__name__"
-	 >&rarr; Reset the search</a>
+	 >&rarr; Suche zurücksetzen</a>
     </p>
-    <form tal:attributes="action view.base + '/' + view.__name__;
+    <form novalidate="novalidate" tal:attributes="action view.base + '/' + view.__name__;
 			  method view.formMethod;
 			  enctype view.enctype">
 
@@ -27,57 +27,38 @@
           </div>
 	  
           <div tal:condition="not results">
-            <h1 i18n:translate="">No search results</h1>
+            <h1 i18n:translate="">Keine Ergebnisse</h1>
           </div>
 	  <ul>
             <li tal:repeat="result results">
-	      <a href="" tal:attributes="href result['url']"
+	      <a href="" tal:attributes="href result['url'] + '/edit'"
 		 tal:content="result['title']" />
 	    </li>
           </ul>
         </div>
 	  
-        <div id="fields" tal:condition="view.fieldWidgets" class="col-md-4">
-	  <tal:field repeat="widget view.fieldWidgets">
-	    <div class="error-field"
-		 tal:define="error widget.error"
-		 tal:omit-tag="not error">
-	      <div tal:attributes="class widget.required and 'field required-field' or 'field'">
-		<h4>
-		  <label class="field-label" for="#"
-			 tal:attributes="for widget.htmlId()"
-			 tal:content="widget.title">
-		    Label
-		  </label>
-		  <span i18n:translate=""
-			class="required-label"
-			tal:condition="widget.required">(required)</span>
-		</h4>
-		<p class="field-description"
-		   tal:condition="widget.description"
-		   tal:content="widget.description" />
-		
-		<p class="error-label"
-		   tal:condition="error"
-		   tal:content="error.title" />
-		
-		<tal:widget tal:content="structure widget.render()" />
-	      </div>
+	<div class="form-group col-md-4" tal:condition="view.fieldWidgets">
+	  <div tal:repeat="widget view.fieldWidgets" 
+               tal:attributes="id 'field-' + widget.htmlId(); class widget.error and 'form-group error' or 'form-group'">
+	    <label class="control-label" for="#" tal:attributes="for widget.htmlId()"> 
+              <span tal:content="widget.title"> </span> <span tal:condition="widget.required"> * </span> 
+	    </label>
+	    <div class="input controls" metal:define-macro="wfield-inline">
+              <tal:widget metal:define-macro="field-inline" tal:content="structure widget.render()" />
+              <span class="help-inline" tal:condition="widget.error" tal:content="widget.error.title"> Error </span>
+              <p class="help-block" tal:condition="widget.description" tal:content="structure widget.description" tal:attributes="for widget.htmlId()"></p>
 	    </div>
-	  </tal:field>
-	  
+	  </div>
 	  <div tal:condition="view.batcher">
 	    <label for="size" class="field-label" 
-		   i18n:translate="">Results per page</label>
-	    <select id="size" name="batch.size">
-	      <option tal:attributes="selected view.batch_size == 2"
-		      >2</option>
+		   i18n:translate="">Resultate per Seite...</label>
+	    <select id="size" name="batch.size" class="form-control">
 	      <option tal:attributes="selected view.batch_size == 10"
 		      >10</option>
 	      <option tal:attributes="selected view.batch_size == 25"
 		      >25</option>
 	      <option tal:attributes="selected view.batch_size == 50"
-		      >50</option>
+		    >50</option>
 	      <option tal:attributes="selected view.batch_size == 100"
 		      >100</option>
 	    </select>
@@ -85,20 +66,19 @@
 	  <div tal:condition="view.sorter_values">
 	    <label for="sorter" class="field-label" 
 		   i18n:translate="">Sort by</label>
-	    <select id="sorter" name="sorter">
+	    <select id="sorter" name="sorter" class="form-control">
 	      <option tal:repeat="sort view.sorter_values.items()"
 		      tal:attributes="value sort[0];
 				      selected view.sorter == sort[0];"
 		      tal:content="sort[1]" />
 	    </select>
 	  </div>
-	  <div class="actions"
-	       tal:condition="view.actionWidgets">
-	    <div class="action" tal:repeat="widget view.actionWidgets">
-	      <tal:widget tal:content="structure widget.render()" />
-	    </div>
-	  </div>
-        </div>
+	</div>
+	<div class="form-actions" tal:condition="view.actionWidgets">
+	  <span class="action" tal:repeat="widget view.actionWidgets">
+            <tal:widget  metal:define-macro="action-inline" tal:content="structure widget.render()" />
+	  </span>
+	</div>
       </div>
     </form>
   </div>
