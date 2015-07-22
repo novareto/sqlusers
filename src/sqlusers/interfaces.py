@@ -1,6 +1,7 @@
-from zope.schema import TextLine, Text, Password
-from zope.interface import Interface
+# -*- coding: utf-8 -*-
 
+from zope.schema import TextLine, Text, Password, Int
+from zope.interface import Interface
 
 
 class IUser(Interface):
@@ -22,6 +23,17 @@ class IUser(Interface):
         required=False)
 
 
+class IDepartement(Interface):
+
+    id = Int(
+        title=u"Identifier",
+        required=False)
+    
+    title = TextLine(
+        title=u"Title",
+        required=True)
+
+    
 class IBenutzer(IUser):
     """
     """
@@ -32,8 +44,7 @@ class IBenutzer(IUser):
 
     roles = Text(
         title=u"roles",
-        required=False,
-        )
+        required=False)
 
     name2 = TextLine(
         title=u"name2",

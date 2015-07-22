@@ -3,7 +3,8 @@
     xmlns:grok="http://namespaces.zope.org/grok">
 
   <include package="uvclight" />
-  <include package="uvc.themes.dguv" />
+  <include package="siguvtheme.uvclight" />
+
   <grok:grok package="." />
 
 </configure>

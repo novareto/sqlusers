@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from .interfaces import IBenutzer
+from .interfaces import IBenutzer, IDepartement
 from sqlalchemy import *
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from zope.interface import implementer
 
 
 Base = declarative_base()
+
+
+membership_table = Table('membership', Base.metadata,
+    Column('login', Integer, ForeignKey('benutzer.login')),
+    Column('department', Integer, ForeignKey('department.id'))
+)
 
 
 @implementer(IBenutzer)
@@ -27,4 +34,16 @@ class Benutzer(Base):
     ort = Column(String(50))
     oid = Column(String(20))
     merkmal = Column(String(10))
-    mysql_engine='InnoDB'
+
+    departments = relationship(
+        "membership",
+        secondary=membership_table,
+        backref="users")
+
+
+@implementer(IDepartement)
+class Department(Base):
+    __tablename__ = "department"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(50), primary_key=True)

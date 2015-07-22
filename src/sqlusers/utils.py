@@ -5,6 +5,7 @@ from .models import Base, Benutzer
 from cromlech.browser import IPublicationRoot
 from cromlech.sqlalchemy import get_session
 from dolmen.sqlcontainer import SQLContainer
+from siguvtheme.uvclight import IDGUVRequest
 from ul.auth import SecurePublication
 from ul.browser.decorators import with_zcml, with_i18n
 from ul.sql import SQLPublication
@@ -49,6 +50,8 @@ class Container(SQLContainer):
 
 class MySQL(SQLPublication):
 
+    layers = [IDGUVRequest]
+    
     def setup_database(self, engine):
         pass
     

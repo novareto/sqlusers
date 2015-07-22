@@ -18,11 +18,13 @@ setup(name='sqlusers',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'psycopg2',
           'dolmen.batch',
           'dolmen.sqlcontainer',
+          'psycopg2',
+          'siguvtheme.uvclight',
           'uvclight[auth]',
           'uvclight[sql]',
+          'zope.testing',
       ],
       entry_points={
          'fanstatic.libraries': [

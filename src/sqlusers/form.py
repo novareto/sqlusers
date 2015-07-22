@@ -1,11 +1,13 @@
-from uvclight import EditForm, Form, Fields, SUCCESS, FAILURE
-from uvclight import action, name, context, title, menuentry
-from cromlech.sqlalchemy import get_session
-from uvc.design.canvas import IContextualActionsMenu
-from zope.interface import Interface
+# -*- coding: utf-8 -*-
+
 from .interfaces import IBenutzer
 from .models import Benutzer
+from cromlech.sqlalchemy import get_session
+from uvc.design.canvas import IContextualActionsMenu
+from uvclight import EditForm, Form, Fields, SUCCESS, FAILURE
+from uvclight import action, name, context, title, menuentry
 from zope.i18nmessageid import MessageFactory
+from zope.interface import Interface
 
 
 _ = MessageFactory('kuvb')

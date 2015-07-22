@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from uvclight import Page, get_template, context, name, DefaultView, Fields
 from .interfaces import IBenutzer
 from .utils import Container
