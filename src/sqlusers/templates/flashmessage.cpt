@@ -1,0 +1,4 @@
+<div id="asd-flashmessage" tal:repeat="message viewlet.messages" class="alert alert-success" role="alert" tal:attributes="class string: alert alert-${message.type}">
+  <span tal:content="message.message"/>
+</div>
+

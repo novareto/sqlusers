@@ -1,34 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import copy
-import csv
-import datetime
-import dolmen.menu
-import types
-
 from math import log
 
-from uvclight import Form, Page, View, Fields, Action, Actions
+from uvclight import Form, Fields, Action, Actions
 from uvclight import get_template, context, name, title
+from ul.auth import require
 
-from cStringIO import StringIO
-from cromlech.browser import ITraverser, IRequest
-from cromlech.browser.exceptions import HTTPFound
-from cromlech.browser.utils import redirect_exception_response
-from cromlech.webob.response import Response
 from dolmen.batch import Batcher
 from dolmen.forms.base.errors import Error
-from dolmen.forms.base.markers import SUCCESS, FAILURE, NOTHING_DONE, NO_VALUE
+from dolmen.forms.base.markers import SUCCESS, FAILURE, NO_VALUE
 from dolmen.forms.ztk import InvariantsValidation
-from dolmen.view import make_layout_response
-from z3c.batching.batch import Batch
-from zope.cachedescriptors.method import cachedIn
-from zope.cachedescriptors.property import Lazy
-from zope.component import getUtility
-from zope.i18n import translate
-from zope.interface import Interface
-from zope.schema.interfaces import IVocabularyFactory
-from zope.security import checkPermission
 
 from .models import Benutzer
 from .utils import Container
@@ -39,38 +20,6 @@ from .resources import css
 def get_dichotomy_batches(batches, N, n):
     """
     A dummy batch object::
-
-      >>> batch = range(1, 101)  # have enough numbers
-
-    Help user make a dichotomic search::
-
-      >>> list(get_dichotomy_batches(batch, 100,50))
-      [('previous', 1), ('ellipsis', '...'), ('previous', 25), ('ellipsis', '...'), ('previous', 48), ('previous', 49), ('current', 50), ('next', 51), ('next
-', 52), ('ellipsis', '...'), ('next', 75), ('ellipsis', '...'), ('next', 100)]
-      >>> list(get_dichotomy_batches(batch, 100,25))
-      [('previous', 1), ('ellipsis', '...'), ('previous', 12), ('ellipsis', '...'), ('previous', 24), ('current', 25), ('next', 26), ('ellipsis', '...'), ('n
-ext', 37), ('ellipsis', '...'), ('next', 50), ('ellipsis', '...'), ('next', 100)]
-
-    limit cases::
-
-      >>> list(get_dichotomy_batches(batch, 1,1))
-      [('current', 1)]
-      >>> list(get_dichotomy_batches(batch, 100,1))
-      [('current', 1), ('next', 2), ('next', 3), ('ellipsis', '...'), ('next', 6), ('ellipsis', '...'), ('next', 12), ('ellipsis', '...'), ('next', 25), ('el
-lipsis', '...'), ('next', 50), ('ellipsis', '...'), ('next', 100)]
-      >>> list(get_dichotomy_batches(batch, 100,1))
-      [('current', 1), ('next', 2), ('next', 3), ('ellipsis', '...'), ('next', 6), ('ellipsis', '...'), ('next', 12), ('ellipsis', '...'), ('next', 25), ('el
-lipsis', '...'), ('next', 50), ('ellipsis', '...'), ('next', 100)]
-
-    Buggy cases do not break::
-    >>> list(get_dichotomy_batches(batch, 100,150)) == (
-    ...     list(get_dichotomy_batches(batch, 100,100)))
-    True
-    >>> list(get_dichotomy_batches(batch, 100,-20)) == (
-    ...     list(get_dichotomy_batches(batch, 100,1)))
-    True
-
-    
     """
     # normalize
     n = max(1, min(n, N))
@@ -144,7 +93,7 @@ class SearchBatcher(Batcher):
         N = self.batch.batches.total
         n = self.batch.number
         if N <= 8:
-            return iter_batches(self.batch.batches, N, n)    
+            return iter_batches(self.batch.batches, N, n)
         return get_dichotomy_batches(self.batch.batches, N, n)
 
 
@@ -153,17 +102,16 @@ class SearchAction(Action):
     def search(self, form, data):
         session = form.context.session
         query = session.query(Benutzer)
-        total = query.count()
 
         for field, value in data.items():
             if value:
-                prop = getattr(Benutzer, field)
-            
-                if '*' in value:
-                    like = value.replace('*', '%')
-                    query = query.filter(prop.like(like))
-                else:
-                    query = query.filter(prop == value)
+                if value is not NO_VALUE:
+                    prop = getattr(Benutzer, field)
+                    if '*' in value:
+                        like = value.replace('*', '%')
+                        query = query.filter(prop.like(like))
+                    else:
+                        query = query.filter(prop == value)
 
             sorting = form.sorter
             if sorting[0] == '-':
@@ -173,17 +121,17 @@ class SearchAction(Action):
                 sorter = getattr(Benutzer, form.sorter)
                 query = query.order_by(sorter)
 
+        total = query.count()
         query = query.limit(form.batch_size)
         query = query.offset(form.batch_start)
-
         return total, query.all()
 
     def __call__(self, form):
         data, errors = form.extractData()
         form.extracted = data
 
-        if errors:
-            return FAILURE
+        #if errors:
+        #    return FAILURE
 
         if not data:
             form.errors.add(Error('form', 'You need at least one value'))
@@ -196,16 +144,18 @@ class SearchAction(Action):
 class SearchPage(Form):
     name('index')
     context(Container)
+    require('manage.users')
+
     template = get_template('search.pt', __file__)
 
     fields = Fields(IUser)
     sorter = 'login'
     sorter_values = {
         field.identifier: u'▲ ' + field.title for field in fields
-        }
+    }
     sorter_values.update({
         u'-' + field.identifier: u'▼ ' + field.title for field in fields
-        })
+    })
 
     search_results = tuple()
     dataValidators = [InvariantsValidation]
@@ -215,20 +165,26 @@ class SearchPage(Form):
 
     batch_size = 25
 
-    actions = Actions(SearchAction(u'Search'))
+    actions = Actions(SearchAction(u'Suchen'))
+
+    def update(self):
+        for field in self.fields:
+            field.required = False
+            field.readonly = False
 
     @property
     def title(self):
-        return title.bind(default='Search').get(self)
+        return title.bind(default='Suche').get(self)
 
     @property
     def results(self):
         for result in self.search_results:
             yield {
                 'url': self.base + '/' + self.context.key_reverse(result),
-                'title': '%s %s (%s)' % (result.login, result.az, result.email),
+                'title': '%s %s (%s)' % (
+                    result.login, result.az, result.email),
                 'obj': result,
-                }
+            }
 
     def updateActions(self):
         css.need()

@@ -19,6 +19,7 @@ setup(name='sqlusers',
       zip_safe=False,
       install_requires=[
           'dolmen.batch',
+          'uvc.themes.btwidgets',
           'dolmen.sqlcontainer',
           'psycopg2',
           'siguvtheme.uvclight',

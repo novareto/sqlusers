@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 
-from zope.schema import TextLine, Text, Password, Int
 from zope.interface import Interface
+from zope.schema import TextLine, Text, Password, Int
 
 
 class IUser(Interface):
 
     login = TextLine(
-        title=u"login",
-        required=False)
+        title=u"Benutzername",
+        required=True)
 
     az = TextLine(
-        title=u"az",
-        required=False)
+        title=u"Mitbenutzerkennung",
+        defaultFactory=lambda: u'00',
+        required=True)
 
     email = TextLine(
-        title=u"email",
+        title=u"E-Mail",
         required=False)
 
     name1 = TextLine(
-        title=u"name1",
-        required=False)
+        title=u"Firmenname",
+        required=True)
 
 
 class IDepartement(Interface):
@@ -37,9 +38,8 @@ class IDepartement(Interface):
 class IBenutzer(IUser):
     """
     """
-
     password = Password(
-        title=u"password",
+        title=u"passwort",
         required=False)
 
     roles = Text(
@@ -47,34 +47,25 @@ class IBenutzer(IUser):
         required=False)
 
     name2 = TextLine(
-        title=u"name2",
+        title=u"Name2",
         required=False)
 
     name3 = TextLine(
-        title=u"name3",
+        title=u"Name3",
         required=False)
 
     strasse = TextLine(
-        title=u"strasse",
+        title=u"Strasse",
         required=True)
 
     nr = TextLine(
-        title=u"nr",
+        title=u"Hausnummer",
         required=True)
 
     plz = TextLine(
-        title=u"plz",
-        required=False)
+        title=u"Postleitzahl",
+        required=True)
 
     ort = TextLine(
-        title=u"ort",
-        required=False)
-
-    oid = TextLine(
-        title=u"oid",
-        required=False)
-
-    merkmal = TextLine(
-        title=u"merkmal",
-        required=False)
-
+        title=u"Ort",
+        required=True)
