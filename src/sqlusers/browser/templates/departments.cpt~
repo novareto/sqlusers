@@ -1,5 +1,0 @@
-<ul>
-  <li tal:repeat="dep context">
-    <a tal:attributes="href dep.id" tal:content="dep.title" />
-  </li>
-</ul>
