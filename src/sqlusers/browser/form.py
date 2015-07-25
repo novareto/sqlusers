@@ -54,6 +54,7 @@ class IDepartmentChoice(Interface):
 @menuentry(IDocumentActions, order=10)
 class AddAdmin(Form):
     context(AdminsContainer)
+    title(u'Admin Benutzer hinzufügen')
     name('add')
     require('manage.departments')
 
@@ -64,15 +65,10 @@ class AddAdmin(Form):
         if principal.id == 'admin':
             fields += Fields(IDepartmentChoice)
         return fields
-            
+
     @property
     def action_url(self):
         return self.request.path
-    
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
 
     @action(_(u'Anlegen'))
     def handle_save(self):
@@ -97,11 +93,17 @@ class AddAdmin(Form):
         self.flash(_(u'Added with success.'))
         self.redirect(self.application_url())
         return SUCCESS
-    
+
+    @action('Abbrechen')
+    def handle_cancel(self):
+        self.flash('Die Aktion wurde abgebrochen')
+        return self.redirect(self.application_url())
+
 
 @menuentry(IDocumentActions, order=20)
 class AddBenutzer(Form):
     context(UsersContainer)
+    title(u'Benuzter hinzufügen')
     name('add')
     require('manage.users')
 
@@ -112,15 +114,11 @@ class AddBenutzer(Form):
         if principal.id == 'admin':
             fields += Fields(IDepartmentChoice)
         return fields
-            
+
     @property
     def action_url(self):
         return self.request.path
 
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
 
     @action(_(u'Anlegen'))
     def handle_save(self):
@@ -146,6 +144,11 @@ class AddBenutzer(Form):
         self.flash(_(u'Added with success.'))
         self.redirect(self.application_url())
         return SUCCESS
+
+    @action('Abbrechen')
+    def handle_cancel(self):
+        self.flash('Die Aktion wurde abgebrochen')
+        return self.redirect(self.application_url())
 
 
 class MyDeleteAction(DeleteAction):
@@ -183,6 +186,7 @@ class DelForwardAction(CancelAction):
 @menuentry(IDocumentActions, order=10)
 class EditBenutzer(EditForm):
     context(IBenutzer)
+    title(u'Benutzer bearbeiten')
     name('edit')
     require('manage.users')
 
@@ -202,6 +206,7 @@ class EditBenutzer(EditForm):
 class DeleteBenutzer(Form):
     context(IBenutzer)
     name('delete')
+    title(u'Benutzer entfernen')
     require('manage.users')
     description = title = u"Wollen Sie wirklich löschen"
 
@@ -210,11 +215,6 @@ class DeleteBenutzer(Form):
     @property
     def action_url(self):
         return self.request.path
-
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
 
     @action(_(u'Löschen'))
     def handle_save(self):
@@ -225,10 +225,16 @@ class DeleteBenutzer(Form):
         self.redirect(self.application_url())
         return SUCCESS
 
+    @action('Abbrechen')
+    def handle_cancel(self):
+        self.flash('Die Aktion wurde abgebrochen')
+        return self.redirect(self.application_url())
+
 
 @menuentry(IDocumentActions, order=10)
 class AddDepartment(Form):
     context(DepartmentsContainer)
+    title(u'Modulkennung hinzufügen')
     name('add')
     require('manage.departments')
 
@@ -237,11 +243,6 @@ class AddDepartment(Form):
     @property
     def action_url(self):
         return self.request.path
-
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
 
     @action(_(u'Anlegen'))
     def handle_save(self):
@@ -258,3 +259,9 @@ class AddDepartment(Form):
         self.flash(_(u'Added with success.'))
         self.redirect(self.url(self.context))
         return SUCCESS
+
+    @action('Abbrechen')
+    def handle_cancel(self):
+        self.flash('Die Aktion wurde abgebrochen')
+        return self.redirect(self.application_url())
+

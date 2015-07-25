@@ -1,6 +1,14 @@
-<ul>
-  <li tal:repeat="admin context">
-    <a tal:attributes="href '/admins/%s' % admin.login"
-       tal:content="admin.login" />
-  </li>
-</ul>
+<h1> Management Benutzer </h1>
+
+<table class="table">
+  <tr>
+    <th> Name </th>
+    <th> E-Mail </th>
+    <th> Modulkennung </th>
+  </tr>
+  <tr tal:repeat="admin context">
+    <td> <a tal:attributes="href '/admins/%s' % admin.login" tal:content="admin.login"> </a> </td>
+    <td tal:content="admin.email"> </td>
+    <td tal:content="admin.department.title"> </td>
+  </tr>
+</table>

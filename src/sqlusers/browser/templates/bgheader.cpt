@@ -1,0 +1,7 @@
+<div id="divLogo" class="col-md-4">
+  <h1 id="logo">
+    <a tal:attributes="href viewlet.application_url()">
+      <img class="img-responsive" src="http://www.kuvb.de/fileadmin/styles/logo.gif" />
+    </a>
+  </h1>
+</div>

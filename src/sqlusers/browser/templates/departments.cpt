@@ -1,5 +1,11 @@
-<ul>
-  <li tal:repeat="dep context">
-    <a tal:attributes="href '/departments/%s' % dep.id" tal:content="dep.title" />
-  </li>
-</ul>
+<h1> Modulkennungen </h1>
+<table class="table">
+  <tr>
+    <th> Kennung </th>
+    <th> Modul </th>
+  </tr>
+  <tr tal:repeat="dep context">
+    <th tal:content="dep.id"> </th> 
+    <th> <a tal:attributes="href '/departments/%s' % dep.id" tal:content="dep.title" > </a> </th>
+  </tr>
+</table>

@@ -13,6 +13,7 @@ from uvclight import MenuItem, menu, title
 from uvclight import action, name, context, title, menuentry
 from uvclight import Page, get_template, DefaultView, Fields
 from zope.interface import Interface
+from siguvtheme.uvclight.viewlets import BGHeader
 
 
 class Departments(MenuItem):
@@ -20,7 +21,7 @@ class Departments(MenuItem):
     uvclight.title('Modulkennungen')
     uvclight.order(30)
     require('manage.departments')
-    
+
     menu(INavigationMenu)
     url = action = '/departments'
 
@@ -78,3 +79,7 @@ class AppIndex(uvclight.Page):
 
     def render(self):
         return self.redirect(self.application_url() + '/users')
+
+
+class BGHeader(BGHeader):
+    template = get_template('bgheader.cpt', __file__)

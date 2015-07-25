@@ -14,7 +14,7 @@ class IUser(Interface):
         required=True)
 
     password = Password(
-        title=u"passwort",
+        title=u"Passwort",
         required=False)
 
     email = TextLine(
@@ -26,11 +26,11 @@ class IDepartment(Interface):
     """
     """
     id = TextLine(
-        title=u"Identifier",
+        title=u"Kennung",
         required=True)
 
     title = TextLine(
-        title=u"Title",
+        title=u"Titel",
         required=True)
 
 
@@ -39,7 +39,7 @@ class IBenutzer(IUser):
     """
     az = TextLine(
         title=u"Mitbenutzerkennung",
-        defaultFactory=lambda: u'00',
+        defaultFactory=lambda: u'000',
         required=True)
 
     name1 = TextLine(
