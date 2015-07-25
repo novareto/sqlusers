@@ -1,0 +1,6 @@
+<ul>
+  <li tal:repeat="admin context">
+    <a tal:attributes="href '/admins/%s' % admin.login"
+       tal:content="admin.login" />
+  </li>
+</ul>

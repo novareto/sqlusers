@@ -12,7 +12,7 @@ from dolmen.forms.base.markers import SUCCESS, FAILURE, NO_VALUE
 from dolmen.forms.ztk import InvariantsValidation
 
 from .models import Benutzer
-from .utils import Container
+from .utils import UsersContainer
 from .interfaces import IUser
 from .resources import css
 
@@ -101,7 +101,7 @@ class SearchAction(Action):
 
     def search(self, form, data):
         session = form.context.session
-        query = session.query(Benutzer)
+        query = session.query(form.context.model)
 
         for field, value in data.items():
             if value:
@@ -143,7 +143,7 @@ class SearchAction(Action):
 
 class SearchPage(Form):
     name('index')
-    context(Container)
+    context(UsersContainer)
     require('manage.users')
 
     template = get_template('search.pt', __file__)
@@ -174,7 +174,9 @@ class SearchPage(Form):
 
     @property
     def title(self):
-        return title.bind(default='Suche').get(self)
+        return '%s (%s)' % (
+            title.bind(default='Suche').get(self),
+            getattr(self.context, 'title', self.context.__name__))
 
     @property
     def results(self):

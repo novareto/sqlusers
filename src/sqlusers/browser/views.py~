@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import uvclight
-from .interfaces import IBenutzer
-from .models import Benutzer
-from .utils import Container
+from ..interfaces import IUser, IBenutzer, IDepartment
+from ..models import Benutzer, Admin
+from ..utils import UsersContainer, DepartmentsContainer
 from cromlech.browser import getSession
 from dolmen.message import receive
 from ul.auth import require
@@ -12,30 +10,6 @@ from uvc.design.canvas.menus import INavigationMenu
 from uvclight import MenuItem, menu, title
 from uvclight import Page, get_template, context, name, DefaultView, Fields
 from zope.interface import Interface
-
-
-class BenutzerIndex(DefaultView):
-    name('index')
-    context(Benutzer)
-    require('manage.users')
-
-    fields = Fields(IBenutzer)
-
-    def update(self):
-        self.flash('LOS GEHTS')
-        for field in self.fields:
-            field.required = False
-            field.readonly = False
-
-
-class CreateUserEntry(uvclight.MenuItem):
-    uvclight.title(u'Benuzter anlegen')
-    uvclight.auth.require('manage.users')
-    uvclight.menu(INavigationMenu)
-
-    @property
-    def action(self):
-        return self.view.url(self.context, 'add.user')
 
 
 class FlashMessages1(uvclight.Viewlet):
@@ -50,7 +24,7 @@ class FlashMessages1(uvclight.Viewlet):
         else:
             self.messages = []
 
-
+            
 class LogoutMenu(MenuItem):
     context(Interface)
     menu(INavigationMenu)

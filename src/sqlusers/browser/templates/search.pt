@@ -5,7 +5,8 @@
       <a href="" tal:attributes="href view.base + '/' + view.__name__"
 	 >&rarr; Suche zurücksetzen</a>
     </p>
-    <form novalidate="novalidate" tal:attributes="action view.base + '/' + view.__name__;
+    <form novalidate="novalidate"
+	  tal:attributes="action view.base + '/' + view.__name__;
 			  method view.formMethod;
 			  enctype view.enctype">
 
@@ -76,7 +77,8 @@
 	</div>
 	<div class="form-actions" tal:condition="view.actionWidgets">
 	  <span class="action" tal:repeat="widget view.actionWidgets">
-            <tal:widget  metal:define-macro="action-inline" tal:content="structure widget.render()" />
+            <tal:widget metal:define-macro="action-inline"
+			tal:content="structure widget.render()" />
 	  </span>
 	</div>
       </div>

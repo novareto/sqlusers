@@ -1,0 +1,6 @@
+<ul>
+  <li tal:repeat="user context.users">
+    <a tal:attributes="href '/users/%s.%s' % (user.login, user.az)"
+       tal:content="user.login" />
+  </li>
+</ul>

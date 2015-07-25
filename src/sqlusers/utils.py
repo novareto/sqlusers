@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import uvclight
-from .models import Base, Benutzer
+from .models import Base, Admin, Benutzer, Department
 from cromlech.browser import IPublicationRoot
 from dolmen.sqlcontainer import SQLContainer
 from grokcore.security import Permission
 from siguvtheme.uvclight import IDGUVRequest
+from ul.auth import unauthenticated_principal
 from ul.auth import SecurePublication, ICredentials, GenericSecurityPolicy
 from ul.browser.decorators import with_zcml, with_i18n
 from ul.sql import SQLPublication
@@ -15,11 +16,17 @@ from zope.component import getGlobalSiteManager
 from zope.component.hooks import setSite
 from zope.interface import implementer
 from zope.security.management import setSecurityPolicy
+from zope.location import Location
 
 
 class ManageUsers(Permission):
     uvclight.name('manage.users')
     uvclight.title('Manage users')
+
+
+class ManageDepartments(Permission):
+    uvclight.name('manage.departments')
+    uvclight.title('Manage departments')
 
 
 class Site(object):
@@ -35,18 +42,8 @@ class Site(object):
         setSite()
 
 
-class MyCredentials(uvclight.GlobalUtility):
-    uvclight.name('admin_only')
-    uvclight.implements(ICredentials)
-
-    def log_in(self, **data):
-        return data['username'] == 'admin' and data['password'] == 'admin'
-
-
-@implementer(IPublicationRoot)
-class Container(SQLContainer):
+class UsersContainer(SQLContainer):
     model = Benutzer
-    credentials = ['admin_only']
 
     def key_converter(self, id):
         keys = unquote(id)
@@ -59,24 +56,85 @@ class Container(SQLContainer):
     def key_reverse(self, obj):
         return quote('%s %s' % (obj.login, obj.az))
 
+
+class AdminsContainer(SQLContainer):
+    model = Admin
+    
+    def key_reverse(self, obj):
+        return obj.login
+
+
+class DepartmentsContainer(SQLContainer):
+    model = Department
+
+    def key_converter(self, id):
+        return unquote(id)
+
+    def key_reverse(self, obj):
+        return quote(obj.id)
+
+
+Users = UsersContainer(None, 'users', 'sqlusers')
+Admins = AdminsContainer(None, 'admins', 'sqlusers')
+Departments = DepartmentsContainer(None, 'departments', 'sqlusers')
+
+
+class AdminCredentials(uvclight.GlobalUtility):
+    uvclight.name('admin')
+    uvclight.implements(ICredentials)
+
+    def log_in(self, request, username, password, **data):
+        if username == 'admin':
+            return password == 'admin'
+        else:
+            try:
+                user = Admins[username]
+                return user is not None and user.password == password
+            except KeyError:
+                return False
+
+
+@implementer(IPublicationRoot)
+class MySQL(Location, SQLPublication, SecurePublication):
+    uvclight.traversable('admins', 'users', 'departments')
+    layers = [IDGUVRequest, IBootstrapRequest]
+    credentials = ['admin']
+    
+    @property
+    def users(self):
+        Users.__parent__ = self
+        return Users
+
+    @property
+    def admins(self):
+        Admins.__parent__ = self
+        return Admins
+    
+    @property
+    def departments(self):
+        Departments.__parent__ = self
+        return Departments
+    
     def getSiteManager(self):
         return getGlobalSiteManager()
-
-
-class MySQL(SQLPublication, SecurePublication):
-    layers = [IDGUVRequest, IBootstrapRequest]
     
     def setup_database(self, engine):
         pass
 
     def site_manager(self, environ):
-        root = Container(None, self.name, self.name)
-        return Site(root)
+        return Site(self)
 
     def principal_factory(self, username):
         principal = SecurePublication.principal_factory(self, username)
-        if username == 'admin':
-            principal.permissions.add('manage.users')
+        if principal is not unauthenticated_principal:
+            if username != 'admin':
+                account = Admins[username]
+                principal.permissions = set(('manage.users',))
+                principal.department = account.department_id
+            else:
+                principal.permissions = set(
+                    ('manage.users', 'manage.departments'))
+            principal.roles = set()
         return principal
 
     @classmethod

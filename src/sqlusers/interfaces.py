@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from ul.auth import unauthenticated_principal
+from uvclight.utils import current_principal
 from zope.interface import Interface
-from zope.schema import TextLine, Text, Password, Int
+from zope.schema import TextLine, Text, Password, Int, Choice, Bool
+from zope.schema.interfaces import IContextSourceBinder
 
 
 class IUser(Interface):
@@ -10,42 +13,39 @@ class IUser(Interface):
         title=u"Benutzername",
         required=True)
 
-    az = TextLine(
-        title=u"Mitbenutzerkennung",
-        defaultFactory=lambda: u'00',
-        required=True)
+    password = Password(
+        title=u"passwort",
+        required=False)
 
     email = TextLine(
         title=u"E-Mail",
         required=False)
 
-    name1 = TextLine(
-        title=u"Firmenname",
+
+class IDepartment(Interface):
+    """
+    """
+    id = TextLine(
+        title=u"Identifier",
         required=True)
 
-
-class IDepartement(Interface):
-
-    id = Int(
-        title=u"Identifier",
-        required=False)
-    
     title = TextLine(
         title=u"Title",
         required=True)
 
-    
+
 class IBenutzer(IUser):
     """
     """
-    password = Password(
-        title=u"passwort",
-        required=False)
+    az = TextLine(
+        title=u"Mitbenutzerkennung",
+        defaultFactory=lambda: u'00',
+        required=True)
 
-    roles = Text(
-        title=u"roles",
-        required=False)
-
+    name1 = TextLine(
+        title=u"Firmenname",
+        required=True)
+    
     name2 = TextLine(
         title=u"Name2",
         required=False)

@@ -1,0 +1,9 @@
+<div>
+  <h1 tal:content="context.title" />
+  <ul>
+    <li tal:repeat="user context.users">
+      <a tal:attributes="href '/users/%s%%20%s' % (user.login, user.az)"
+	 tal:content="user.login" />
+    </li>
+  </ul>
+</div>

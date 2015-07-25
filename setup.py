@@ -26,10 +26,11 @@ setup(name='sqlusers',
           'uvclight[auth]',
           'uvclight[sql]',
           'zope.testing',
+          'sqlalchemy',
       ],
       entry_points={
          'fanstatic.libraries': [
-            'sqlusers = sqlusers.resources:library',
+            'sqlusers = sqlusers.browser.resources:library',
          ],
          'paste.app_factory': [
              'app = sqlusers.utils:MySQL.create',
