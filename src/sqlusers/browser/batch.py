@@ -14,6 +14,7 @@ from dolmen.forms.ztk import InvariantsValidation
 from ..utils import UsersContainer
 from ..interfaces import IUser
 from .resources import css
+from ..models import Benutzer
 
 
 def get_dichotomy_batches(batches, N, n):
@@ -182,8 +183,8 @@ class SearchPage(Form):
         for result in self.search_results:
             yield {
                 'url': self.base + '/' + self.context.key_reverse(result),
-                'title': '%s %s (%s)' % (
-                    result.login, result.az, result.email),
+                'title': '%s%s%s (%s)' % (
+                    result.login, result.department.id, result.az, result.email),
                 'obj': result,
             }
 
