@@ -42,6 +42,10 @@ class IBenutzer(IUser):
         defaultFactory=lambda: u'000',
         required=True)
 
+    department_id = TextLine(
+        title=u"Modulkennung",
+        required=False)
+
     name1 = TextLine(
         title=u"Firmenname",
         required=True)

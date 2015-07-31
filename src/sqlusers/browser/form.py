@@ -46,7 +46,7 @@ class IDepartmentChoice(Interface):
     """
     """
     department_id = Choice(
-        title=u"Department",
+        title=u"Modulkennung",
         source=department_choice,
         required=True)
 
@@ -90,7 +90,7 @@ class AddAdmin(Form):
         session.add(admin)
         session.flush()
         session.refresh(admin)
-        self.flash(_(u'Added with success.'))
+        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt.'))
         self.redirect(self.application_url())
         return SUCCESS
 
@@ -109,7 +109,7 @@ class AddBenutzer(Form):
 
     @property
     def fields(self):
-        fields = Fields(IBenutzer)
+        fields = Fields(IBenutzer).omit('department_id')
         principal = current_principal()
         if principal.id == 'admin':
             fields += Fields(IDepartmentChoice)
@@ -141,7 +141,7 @@ class AddBenutzer(Form):
         session.add(benutzer)
         session.flush()
         session.refresh(benutzer)
-        self.flash(_(u'Added with success.'))
+        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt.'))
         self.redirect(self.application_url())
         return SUCCESS
 
@@ -256,7 +256,7 @@ class AddDepartment(Form):
         session.add(department)
         session.flush()
         session.refresh(department)
-        self.flash(_(u'Added with success.'))
+        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt.'))
         self.redirect(self.url(self.context))
         return SUCCESS
 
