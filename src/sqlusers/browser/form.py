@@ -265,3 +265,22 @@ class AddDepartment(Form):
         self.flash('Die Aktion wurde abgebrochen')
         return self.redirect(self.application_url())
 
+
+@menuentry(IDocumentActions, order=10)
+class EditDepartment(EditForm):
+    context(IDepartment)
+    title(u'Modulkennung bearbeiten')
+    name('edit')
+    require('manage.departments')
+
+    fields = Fields(IDepartment)
+
+    @property
+    def actions(self):
+        actions = EditForm.actions.omit('cancel')
+        return actions + MyCancelAction('Abbrechen') + DelForwardAction(title=u"Entfernen")
+
+    @property
+    def action_url(self):
+        return self.request.path
+

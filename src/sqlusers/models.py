@@ -51,6 +51,7 @@ class Benutzer(Base):
     ort = Column(String(50))
     oid = Column(String(20))
     merkmal = Column(String(10))
+    rid = Column(String(12))
 
     department_id = Column(String(50), ForeignKey(Department.id))
 

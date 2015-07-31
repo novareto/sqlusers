@@ -49,7 +49,7 @@ class IBenutzer(IUser):
     name1 = TextLine(
         title=u"Firmenname",
         required=True)
-    
+
     name2 = TextLine(
         title=u"Name2",
         required=False)
@@ -73,3 +73,7 @@ class IBenutzer(IUser):
     ort = TextLine(
         title=u"Ort",
         required=True)
+
+    rid = TextLine(
+        title=u"Rechtsträger ID",
+        required=False)
