@@ -96,7 +96,7 @@ class SearchBatcher(Batcher):
             return iter_batches(self.batch.batches, N, n)
         return get_dichotomy_batches(self.batch.batches, N, n)
 
-
+from uvclight.utils import current_principal
 class SearchAction(Action):
 
     def search(self, form, data):
@@ -120,6 +120,9 @@ class SearchAction(Action):
             else:
                 sorter = getattr(Benutzer, form.sorter)
                 query = query.order_by(sorter)
+        principal = current_principal()
+        if principal.id != 'admin':
+            query = query.filter('department_id' == principal.department)
 
         total = query.count()
         query = query.limit(form.batch_size)
@@ -148,7 +151,7 @@ class SearchPage(Form):
 
     template = get_template('search.pt', __file__)
 
-    fields = Fields(IUser)
+    fields = Fields(IUser).omit('password')
     sorter = 'login'
     sorter_values = {
         field.identifier: u'▲ ' + field.title for field in fields

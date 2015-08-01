@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import string
+import random
 
+from uvclight import get_template
 from ..interfaces import IUser, IBenutzer, IDepartment
 from ..models import Admin, Benutzer, Department
 from ..utils import UsersContainer, AdminsContainer, DepartmentsContainer
@@ -11,7 +14,6 @@ from ul.auth import require
 from ul.auth import unauthenticated_principal
 from uvclight.utils import current_principal
 from uvc.entities.browser import IDocumentActions
-from uvc.design.canvas.menus import INavigationMenu
 from uvclight import EditForm, Form, Fields, SUCCESS, FAILURE
 from uvclight import action, name, context, title, menuentry
 from zope.i18nmessageid import MessageFactory
@@ -20,6 +22,24 @@ from zope.schema import Choice
 from grokcore.component import provider
 from zope.schema.interfaces import IContextSourceBinder
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
+from dolmen.forms import base
+from sqlalchemy.sql.expression import func
+from sqlusers import models
+
+
+def genpw():
+    s = "%s%s" % (string.ascii_lowercase, string.ascii_uppercase)
+    d = string.digits
+    return "%s%s%s%s%s%s%s%s" % (
+        random.choice(s),
+        random.choice(d),
+        random.choice(s),
+        random.choice(d),
+        random.choice(s),
+        random.choice(d),
+        random.choice(s),
+        random.choice(d),
+    )
 
 
 _ = MessageFactory('kuvb')
@@ -106,6 +126,7 @@ class AddBenutzer(Form):
     title(u'Benuzter hinzufügen')
     name('add')
     require('manage.users')
+    ignoreContent = False
 
     @property
     def fields(self):
@@ -119,6 +140,22 @@ class AddBenutzer(Form):
     def action_url(self):
         return self.request.path
 
+    def update(self):
+        session = get_session('sqlusers')
+        principal = current_principal()
+        ret = ""
+        if principal.id != 'admin':
+            if principal.department == "a":
+                ret = int(session.query(func.max(models.Benutzer.login)).filter(models.Benutzer.department_id=='a').one()[0]) + 1
+        data = dict(
+            password=genpw(),
+            login=ret
+        )
+        self.setContentData(base.DictDataManager(data))
+
+    def updateForm(self):
+        super(AddBenutzer, self).updateForm()
+        self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
 
     @action(_(u'Anlegen'))
     def handle_save(self):
