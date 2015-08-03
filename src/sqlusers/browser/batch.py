@@ -122,7 +122,8 @@ class SearchAction(Action):
                 query = query.order_by(sorter)
         principal = current_principal()
         if principal.id != 'admin':
-            query = query.filter('department_id' == principal.department)
+            query = query.filter(Benutzer.department_id == principal.department)
+
 
         total = query.count()
         query = query.limit(form.batch_size)
@@ -177,9 +178,7 @@ class SearchPage(Form):
 
     @property
     def title(self):
-        return '%s (%s)' % (
-            title.bind(default='Suche').get(self),
-            getattr(self.context, 'title', self.context.__name__))
+        return u"Suche Benutzer"
 
     @property
     def results(self):
