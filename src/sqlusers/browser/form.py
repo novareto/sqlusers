@@ -321,3 +321,30 @@ class EditDepartment(EditForm):
     def action_url(self):
         return self.request.path
 
+@menuentry(IDocumentActions, order=20)
+class DeleteDepartment(Form):
+    context(IDepartment)
+    name('delete')
+    title(u'Modulkennung entfernen')
+    require('manage.users')
+    description = title = u"Wollen Sie wirklich löschen"
+
+    fields = Fields()
+
+    @property
+    def action_url(self):
+        return self.request.path
+
+    @action(_(u'Löschen'))
+    def handle_save(self):
+        session = get_session('sqlusers')
+        session.delete(self.context)
+        session.flush()
+        self.flash(_(u'Das Objekt wurde erfolgreich gelöscht.'))
+        self.redirect(self.application_url())
+        return SUCCESS
+
+    @action('Abbrechen')
+    def handle_cancel(self):
+        self.flash('Die Aktion wurde abgebrochen')
+        return self.redirect(self.application_url())
