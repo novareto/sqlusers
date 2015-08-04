@@ -161,6 +161,8 @@ class AddBenutzer(Form):
             if principal.department == "a":
                 login = self.fieldWidgets.get('form.field.login')
                 login._htmlAttributes['readonly'] = 'True'
+        self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
+        self.fieldWidgets.get('form.field.plz')._htmlAttributes['maxlength'] = 5
 
     @action(_(u'Anlegen'))
     def handle_save(self):
@@ -243,6 +245,12 @@ class EditBenutzer(EditForm):
     def action_url(self):
         return self.request.path
 
+    def updateForm(self):
+        super(EditBenutzer, self).updateForm()
+        #self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
+        self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
+        self.fieldWidgets.get('form.field.plz')._htmlAttributes['maxlength'] = 5
+
 
 @menuentry(IDocumentActions, order=20)
 class DeleteBenutzer(Form):
@@ -263,7 +271,7 @@ class DeleteBenutzer(Form):
         session = get_session('sqlusers')
         session.delete(self.context)
         session.flush()
-        self.flash(_(u'Deleted with success.'))
+        self.flash(_(u'Der Benutzer wurde aus dem System gelöscht.'))
         self.redirect(self.application_url())
         return SUCCESS
 

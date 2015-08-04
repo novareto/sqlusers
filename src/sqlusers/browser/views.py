@@ -66,7 +66,8 @@ class Logout(uvclight.View):
     def update(self):
         session = getSession()
         if session:
-            del session['username']
+            if 'username' in session.keys():
+                del session['username']
 
     def render(self):
         return self.redirect(self.application_url() + '/users')
