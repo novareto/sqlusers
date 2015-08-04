@@ -22,6 +22,15 @@ class BenutzerIndex(DefaultView):
 
     fields = Fields(IBenutzer) + Fields(IDepartmentChoice)
 
+    @property
+    def label(self):
+        az = self.context.az
+        if str(az) == '000':
+            az = ""
+        return u"Anmeldename: %s%s%s" % (
+            self.context.login, self.context.department_id, az
+        )
+
     def update(self):
         for field in self.fields:
             field.required = False

@@ -15,6 +15,7 @@ from ul.auth import unauthenticated_principal
 from uvclight.utils import current_principal
 from uvc.entities.browser import IDocumentActions
 from uvclight import EditForm, Form, Fields, SUCCESS, FAILURE
+from dolmen.forms.crud.components import Display
 from uvclight import action, name, context, title, menuentry
 from zope.i18nmessageid import MessageFactory
 from zope.interface import Interface
@@ -241,8 +242,12 @@ class AddBenutzer(Form):
         session.add(benutzer)
         session.flush()
         session.refresh(benutzer)
-        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt.'))
-        self.redirect(self.application_url())
+        az = benutzer.az
+        if str(benutzer.az) != '000':
+            az = ''
+        lname = '%s%s%s' % (benutzer.login, benutzer.department.id, az)
+        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt. Der Anmeldename des Benutzers ist %s.' % lname))
+        self.redirect(self.url(self.context, self.context.key_reverse(benutzer)))
         return SUCCESS
 
     @action('Abbrechen')
@@ -306,6 +311,19 @@ class EditBenutzer(EditForm):
         #self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
         self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
         self.fieldWidgets.get('form.field.plz')._htmlAttributes['maxlength'] = 5
+
+
+class DisplayBenutzer(Display):
+    context(IBenutzer)
+    title(u'Benutzer anzeigen')
+    name('index')
+    require('manage.users')
+
+    fields = Fields(IBenutzer)
+
+    @property
+    def label(self):
+        return "<h2> Der Anmeldename des Benutzers ist </h2>"
 
 
 @menuentry(IDocumentActions, order=20)
