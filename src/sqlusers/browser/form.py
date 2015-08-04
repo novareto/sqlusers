@@ -212,6 +212,11 @@ class AddBenutzer(Form):
     def updateForm(self):
         super(AddBenutzer, self).updateForm()
         self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
+        principal = current_principal()
+        if principal.id != 'admin':
+            if principal.department == "a":
+                login = self.fieldWidgets.get('form.field.login')
+                login._htmlAttributes['readonly'] = 'True'
         self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
         self.fieldWidgets.get('form.field.plz')._htmlAttributes['maxlength'] = 5
 
