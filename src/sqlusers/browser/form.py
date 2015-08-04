@@ -120,6 +120,59 @@ class AddAdmin(Form):
         return self.redirect(self.application_url())
 
 
+@menuentry(IDocumentActions, order=10)
+class EditAdminBenutzer(EditForm):
+    context(IUser)
+    title(u'Admin-Benutzer bearbeiten')
+    name('edit')
+    require('manage.users')
+
+    @property
+    def fields(self):
+        fields = Fields(IUser)
+        principal = current_principal()
+        if principal.id == 'admin':
+            fields += Fields(IDepartmentChoice)
+        return fields
+
+    @property
+    def actions(self):
+        actions = EditForm.actions.omit('cancel')
+        return actions + MyCancelAction('Abbrechen') + DelForwardAction(title=u"Entfernen")
+
+    @property
+    def action_url(self):
+        return self.request.path
+
+@menuentry(IDocumentActions, order=20)
+class DeleteAdminBenutzer(Form):
+    context(IUser)
+    name('delete')
+    title(u'Admin-Benutzer entfernen')
+    require('manage.users')
+    description = title = u"Wollen Sie wirklich löschen"
+
+    fields = Fields()
+
+    @property
+    def action_url(self):
+        return self.request.path
+
+    @action(_(u'Löschen'))
+    def handle_save(self):
+        session = get_session('sqlusers')
+        session.delete(self.context)
+        session.flush()
+        self.flash(_(u'Der Benutzer wurde aus dem System gelöscht.'))
+        self.redirect(self.application_url())
+        return SUCCESS
+
+    @action('Abbrechen')
+    def handle_cancel(self):
+        self.flash('Die Aktion wurde abgebrochen')
+        return self.redirect(self.application_url())
+
+
 @menuentry(IDocumentActions, order=20)
 class AddBenutzer(Form):
     context(UsersContainer)
@@ -146,7 +199,10 @@ class AddBenutzer(Form):
         ret = ""
         if principal.id != 'admin':
             if principal.department == "a":
-                ret = int(session.query(func.max(models.Benutzer.login)).filter(models.Benutzer.department_id=='a').one()[0]) + 1
+                try:
+                    ret = int(session.query(func.max(models.Benutzer.login)).filter(models.Benutzer.department_id=='a').one()[0]) + 1
+                except:
+                    ret = 1000000
         data = dict(
             password=genpw(),
             login=ret
@@ -328,6 +384,7 @@ class EditDepartment(EditForm):
     @property
     def action_url(self):
         return self.request.path
+
 
 @menuentry(IDocumentActions, order=20)
 class DeleteDepartment(Form):

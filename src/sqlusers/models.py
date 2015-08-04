@@ -25,7 +25,7 @@ class Admin(Base):
     login = Column(String(20), primary_key=True)
     password = Column(String(10))
     email = Column(String(50))
-    department_id = Column(String(50), ForeignKey(Department.id))
+    department_id = Column(String(50), ForeignKey(Department.id, onupdate="cascade"))
 
     department = relationship(
         "Department",
@@ -53,7 +53,7 @@ class Benutzer(Base):
     merkmal = Column(String(10))
     rid = Column(String(12))
 
-    department_id = Column(String(50), ForeignKey(Department.id))
+    department_id = Column(String(50), ForeignKey(Department.id, onupdate="cascade"))
 
     department = relationship(
         "Department",
