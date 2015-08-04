@@ -156,6 +156,11 @@ class AddBenutzer(Form):
     def updateForm(self):
         super(AddBenutzer, self).updateForm()
         self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
+        principal = current_principal()
+        if principal.id != 'admin':
+            if principal.department == "a":
+                login = self.fieldWidgets.get('form.field.login')
+                login._htmlAttributes['readonly'] = 'True'
 
     @action(_(u'Anlegen'))
     def handle_save(self):
