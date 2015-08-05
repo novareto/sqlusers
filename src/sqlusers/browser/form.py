@@ -5,7 +5,7 @@ import random
 from uvclight import get_template
 from ..interfaces import IUser, IBenutzer, IDepartment
 from ..models import Admin, Benutzer, Department
-from ..utils import UsersContainer, AdminsContainer, DepartmentsContainer
+from ..utils import ADMINS, UsersContainer, AdminsContainer, DepartmentsContainer
 from cromlech.sqlalchemy import get_session
 from dolmen.forms.base import SuccessMarker
 from dolmen.forms.crud.actions import DeleteAction, message, CancelAction
@@ -51,7 +51,7 @@ def department_choice(context):
     session = get_session('sqlusers')
     user = current_principal()
     if user is not unauthenticated_principal:
-        if user.id == 'admin':
+        if user.id in ADMINS.keys():
             departments = session.query(Department).all()
         else:
             departments = [session.query(Department).get(user.department)]
@@ -83,7 +83,7 @@ class AddAdmin(Form):
     def fields(self):
         fields = Fields(IUser)
         principal = current_principal()
-        if principal.id == 'admin':
+        if principal.id in ADMINS.keys():
             fields += Fields(IDepartmentChoice)
         return fields
 
@@ -132,7 +132,7 @@ class EditAdminBenutzer(EditForm):
     def fields(self):
         fields = Fields(IUser)
         principal = current_principal()
-        if principal.id == 'admin':
+        if principal.id in ADMINS.keys():
             fields += Fields(IDepartmentChoice)
         return fields
 
@@ -186,7 +186,7 @@ class AddBenutzer(Form):
     def fields(self):
         fields = Fields(IBenutzer).omit('department_id')
         principal = current_principal()
-        if principal.id == 'admin':
+        if principal.id in ADMINS.keys():
             fields += Fields(IDepartmentChoice)
         return fields
 
@@ -198,7 +198,7 @@ class AddBenutzer(Form):
         session = get_session('sqlusers')
         principal = current_principal()
         ret = ""
-        if principal.id == 'admin' or principal.department != "c":
+        if principal.id in ADMINS.keys() or principal.department != "c":
             query = session.query(func.max(models.Benutzer.login))
             ret = 1000000
             if query.count() != 0:
@@ -213,7 +213,7 @@ class AddBenutzer(Form):
         super(AddBenutzer, self).updateForm()
         self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
         principal = current_principal()
-        if principal.id == 'admin' or principal.department != "c":
+        if principal.id in ADMINS.keys() or principal.department != "c":
             login = self.fieldWidgets.get('form.field.login')
             login._htmlAttributes['readonly'] = 'True'
         self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3

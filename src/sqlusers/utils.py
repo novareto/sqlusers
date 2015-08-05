@@ -59,7 +59,7 @@ class UsersContainer(SQLContainer):
 
 class AdminsContainer(SQLContainer):
     model = Admin
-    
+
     def key_reverse(self, obj):
         return obj.login
 
@@ -79,13 +79,19 @@ Admins = AdminsContainer(None, 'admins', 'sqlusers')
 Departments = DepartmentsContainer(None, 'departments', 'sqlusers')
 
 
+ADMINS = {
+    'admin': 'admin',
+    'ck': 'ck',
+}
+
+
 class AdminCredentials(uvclight.GlobalUtility):
     uvclight.name('admin')
     uvclight.implements(ICredentials)
 
     def log_in(self, request, username, password, **data):
-        if username == 'admin':
-            return password == 'admin'
+        if username in ADMINS.keys():
+            return password == ADMINS[username]
         else:
             try:
                 user = Admins[username]
@@ -99,7 +105,7 @@ class MySQL(Location, SQLPublication, SecurePublication):
     uvclight.traversable('admins', 'users', 'departments')
     layers = [IDGUVRequest, IBootstrapRequest]
     credentials = ['admin']
-    
+
     @property
     def users(self):
         Users.__parent__ = self
@@ -109,15 +115,15 @@ class MySQL(Location, SQLPublication, SecurePublication):
     def admins(self):
         Admins.__parent__ = self
         return Admins
-    
+
     @property
     def departments(self):
         Departments.__parent__ = self
         return Departments
-    
+
     def getSiteManager(self):
         return getGlobalSiteManager()
-    
+
     def setup_database(self, engine):
         pass
 
@@ -127,7 +133,7 @@ class MySQL(Location, SQLPublication, SecurePublication):
     def principal_factory(self, username):
         principal = SecurePublication.principal_factory(self, username)
         if principal is not unauthenticated_principal:
-            if username != 'admin':
+            if username not in ADMINS.keys():
                 account = Admins[username]
                 principal.permissions = set(('manage.users',))
                 principal.department = account.department_id

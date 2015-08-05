@@ -75,7 +75,7 @@
 	    </select>
 	  </div>
 	</div>
-	<div class="form-actions" tal:condition="view.actionWidgets">
+	<div class="form-actions col-md-4 col-md-offset-8" tal:condition="view.actionWidgets">
 	  <span class="action" tal:repeat="widget view.actionWidgets">
             <tal:widget metal:define-macro="action-inline"
 			tal:content="structure widget.render()" />

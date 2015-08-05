@@ -11,10 +11,11 @@ from dolmen.forms.base.errors import Error
 from dolmen.forms.base.markers import SUCCESS, FAILURE, NO_VALUE
 from dolmen.forms.ztk import InvariantsValidation
 
-from ..utils import UsersContainer
-from ..interfaces import IUser
+from ..utils import UsersContainer, ADMINS
+from ..interfaces import IBenutzer
 from .resources import css
 from ..models import Benutzer
+
 
 
 def get_dichotomy_batches(batches, N, n):
@@ -121,7 +122,7 @@ class SearchAction(Action):
                 sorter = getattr(Benutzer, form.sorter)
                 query = query.order_by(sorter)
         principal = current_principal()
-        if principal.id != 'admin':
+        if principal.id not in ADMINS.keys():
             query = query.filter(Benutzer.department_id == principal.department)
 
 
@@ -152,7 +153,7 @@ class SearchPage(Form):
 
     template = get_template('search.pt', __file__)
 
-    fields = Fields(IUser).omit('password')
+    fields = Fields(IBenutzer).select('login', 'email', 'name1', 'plz', 'ort')
     sorter = 'login'
     sorter_values = {
         field.identifier: u'▲ ' + field.title for field in fields
