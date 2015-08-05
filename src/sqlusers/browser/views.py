@@ -35,7 +35,7 @@ class Users(MenuItem):
 
 
 class Admins(MenuItem):
-    uvclight.title('Management')
+    uvclight.title('Administratoren-Management')
     uvclight.name('admins')
     menu(INavigationMenu)
     uvclight.order(10)

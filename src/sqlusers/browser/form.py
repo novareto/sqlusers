@@ -198,12 +198,11 @@ class AddBenutzer(Form):
         session = get_session('sqlusers')
         principal = current_principal()
         ret = ""
-        if principal.id != 'admin':
-            if principal.department == "a":
-                try:
-                    ret = int(session.query(func.max(models.Benutzer.login)).filter(models.Benutzer.department_id=='a').one()[0]) + 1
-                except:
-                    ret = 1000000
+        if principal.id == 'admin' or principal.department != "c":
+            query = session.query(func.max(models.Benutzer.login))
+            ret = 1000000
+            if query.count() != 0:
+                ret = int(query.one()[0]) + 1
         data = dict(
             password=genpw(),
             login=ret
@@ -214,10 +213,9 @@ class AddBenutzer(Form):
         super(AddBenutzer, self).updateForm()
         self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
         principal = current_principal()
-        if principal.id != 'admin':
-            if principal.department == "a":
-                login = self.fieldWidgets.get('form.field.login')
-                login._htmlAttributes['readonly'] = 'True'
+        if principal.id == 'admin' or principal.department != "c":
+            login = self.fieldWidgets.get('form.field.login')
+            login._htmlAttributes['readonly'] = 'True'
         self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
         self.fieldWidgets.get('form.field.plz')._htmlAttributes['maxlength'] = 5
 
@@ -295,7 +293,7 @@ class EditBenutzer(EditForm):
     name('edit')
     require('manage.users')
 
-    fields = Fields(IBenutzer)
+    fields = Fields(IBenutzer).omit('department_id')
 
     @property
     def actions(self):
@@ -308,7 +306,7 @@ class EditBenutzer(EditForm):
 
     def updateForm(self):
         super(EditBenutzer, self).updateForm()
-        #self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
+        self.fieldWidgets.get('form.field.password').template = get_template('password_edit.cpt', __file__)
         self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
         self.fieldWidgets.get('form.field.plz')._htmlAttributes['maxlength'] = 5
 
