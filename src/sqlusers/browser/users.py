@@ -36,6 +36,10 @@ class BenutzerIndex(DefaultView):
             field.required = False
             field.readonly = False
 
+    @uvclight.action(u'zur Startseite')
+    def handle_back(self):
+        self.redirect(self.application_url())
+
 
 class DepartmentsIndex(Page):
     name('index')
