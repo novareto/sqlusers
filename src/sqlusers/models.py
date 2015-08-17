@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 
 from .interfaces import IBenutzer, IDepartment, IUser
 from sqlalchemy import *
@@ -30,7 +30,13 @@ class Admin(Base):
     department = relationship(
         "Department",
         uselist=False,
-        backref="admlin")
+        backref="admin")
+
+    @property
+    def dep_title(self):
+        if self.department:
+            return self.department.title
+        return ""
 
 
 @implementer(IBenutzer)

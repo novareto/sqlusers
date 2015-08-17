@@ -2,8 +2,8 @@
 import string
 import random
 
-from uvclight import get_template
-from ..interfaces import IUser, IBenutzer, IDepartment
+from uvclight import get_template, MenuItem, viewletmanager, menu
+from ..interfaces import IVerifyPassword, IUser, IBenutzer, IDepartment
 from ..models import Admin, Benutzer, Department
 from ..utils import ADMINS, UsersContainer, AdminsContainer, DepartmentsContainer
 from cromlech.sqlalchemy import get_session
@@ -13,7 +13,7 @@ from dolmen.location import get_absolute_url
 from ul.auth import require
 from ul.auth import unauthenticated_principal
 from uvclight.utils import current_principal
-from uvc.entities.browser import IDocumentActions
+from uvc.entities.browser import IDocumentActions, IPersonalMenu
 from uvclight import EditForm, Form, Fields, SUCCESS, FAILURE
 from dolmen.forms.crud.components import Display
 from uvclight import action, name, context, title, menuentry
@@ -26,6 +26,8 @@ from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 from dolmen.forms import base
 from sqlalchemy.sql.expression import func
 from sqlusers import models
+from dolmen.forms.base.errors import Error
+
 
 
 def genpw():
@@ -119,6 +121,61 @@ class AddAdmin(Form):
     def handle_cancel(self):
         self.flash('Die Aktion wurde abgebrochen')
         return self.redirect(self.application_url())
+
+
+class CPWME(MenuItem):
+    context(Interface)
+    title(u'Passwort ändern')
+    menu(IPersonalMenu)
+
+
+    def available(self):
+        return self.request.princiapl.id in ADMINS.keys()
+
+    @property
+    def url(self):
+         return self.view.application_url() + '/admins/' + self.request.principal.id + '/changepw'
+
+
+class ChangePWAdminBenutzer(EditForm):
+    context(IUser)
+    title(u'Passwort ändern')
+    name('changepw')
+    require('manage.users')
+
+    @property
+    def fields(self):
+        fields = Fields(IUser).select('password') + Fields(IVerifyPassword)
+        return fields
+
+    @property
+    def action_url(self):
+        return self.request.path
+
+    @action('Speichern')
+    def handle_save(self):
+        data, errors = self.extractData()
+        if errors:
+            return
+        if not data['password'] == data['verif']:
+            self.errors.append(
+                Error(identifier='form.field.password',
+                      title='Passwort und Wiederholung sind nicht gleich.'))
+            self.errors.append(
+                Error(identifier='form.field.verif',
+                      title='Passwort und Wiederholung sind nicht gleich.'))
+            self.flash(u'Passwort und Wiederholung sind nicht gleich.')
+            return FAILURE
+
+        self.context.password = data['password']
+        self.flash(u'Ihr Passwort wurde neu gesetzt')
+        self.redirect(self.application_url())
+
+    @action('Abbrechen')
+    def handel_cancel(self):
+        self.flash(u'Die Aktion wurde abgebrochen.')
+        self.redirect(self.application_url())
+    
 
 
 @menuentry(IDocumentActions, order=10)
@@ -375,6 +432,9 @@ class AddDepartment(Form):
 
         department = Department(**data)
         session = get_session('sqlusers')
+        if session.query(Department).get(data.get('id')):
+            self.flash('Es existiert bereits eine Modulkennung mit der ID %s.' % data.get('id'))
+            return FAILURE
         session.add(department)
         session.flush()
         session.refresh(department)
@@ -423,8 +483,12 @@ class DeleteDepartment(Form):
 
     @action(_(u'Löschen'))
     def handle_save(self):
+        if len(self.context.admin) != 0 or len(self.context.users) != 0:
+            self.flash('Es gibt noch Referenzen zu Benutzern oder Admins mit dieser Modulkennung')
+            return
         session = get_session('sqlusers')
         session.delete(self.context)
+      
         session.flush()
         self.flash(_(u'Das Objekt wurde erfolgreich gelöscht.'))
         self.redirect(self.application_url())

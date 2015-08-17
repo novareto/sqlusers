@@ -66,7 +66,7 @@
 	  </div>
 	  <div tal:condition="view.sorter_values">
 	    <label for="sorter" class="field-label" 
-		   i18n:translate="">Sort by</label>
+		   i18n:translate="">Sortieren nach</label>
 	    <select id="sorter" name="sorter" class="form-control">
 	      <option tal:repeat="sort view.sorter_values.items()"
 		      tal:attributes="value sort[0];

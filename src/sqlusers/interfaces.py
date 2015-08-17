@@ -7,6 +7,13 @@ from zope.schema import TextLine, Text, Password, Int, Choice, Bool
 from zope.schema.interfaces import IContextSourceBinder
 
 
+class IVerifyPassword(Interface):
+
+    verif = Password(
+        title=u'Passwort wiederholen',
+        required=True)
+
+
 class IUser(Interface):
 
     login = TextLine(
@@ -15,7 +22,7 @@ class IUser(Interface):
 
     password = Password(
         title=u"Passwort",
-        required=False)
+        required=True)
 
     email = TextLine(
         title=u"E-Mail",

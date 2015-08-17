@@ -9,6 +9,6 @@
   <tr tal:repeat="admin context">
     <td> <a tal:attributes="href '/admins/%s/edit' % admin.login" tal:content="admin.login"> </a> </td>
     <td tal:content="admin.email"> </td>
-    <td tal:content="admin.department.title"> </td>
+    <td tal:content="admin.dep_title"> </td>
   </tr>
 </table>

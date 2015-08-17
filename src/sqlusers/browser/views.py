@@ -8,7 +8,7 @@ from cromlech.browser import getSession
 from dolmen.message import receive
 from ul.auth import require
 from uvc.design.canvas import IAboveContent
-from uvc.design.canvas.menus import INavigationMenu
+from uvc.design.canvas.menus import INavigationMenu, IPersonalMenu
 from uvclight import MenuItem, menu, title
 from uvclight import action, name, context, title, menuentry
 from uvclight import Page, get_template, DefaultView, Fields
@@ -56,7 +56,7 @@ class FlashMessages(uvclight.Viewlet):
             self.messages = []
 
 
-@menuentry(INavigationMenu, order=50)
+@menuentry(IPersonalMenu, order=50)
 class Logout(uvclight.View):
     uvclight.title('Abmelden')
     name('abmelden')

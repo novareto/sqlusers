@@ -186,8 +186,8 @@ class SearchPage(Form):
         for result in self.search_results:
             yield {
                 'url': self.base + '/' + self.context.key_reverse(result),
-                'title': '%s%s%s (%s)' % (
-                    result.login, result.department.id, result.az, result.email),
+                'title': '%s%s%s %s (%s)' % (
+                    result.login, result.department.id, result.az, result.name1, result.email),
                 'obj': result,
             }
 

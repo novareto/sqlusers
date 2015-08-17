@@ -81,7 +81,8 @@ Departments = DepartmentsContainer(None, 'departments', 'sqlusers')
 
 ADMINS = {
     'admin': 'admin',
-    'ck': 'ck',
+    'administrator': 'guvv10',
+    'freygu': 'guvv10',
 }
 
 
