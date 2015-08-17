@@ -127,14 +127,15 @@ class CPWME(MenuItem):
     context(Interface)
     title(u'Passwort ändern')
     menu(IPersonalMenu)
+    require('manage.users')
 
-
+    @property
     def available(self):
-        return self.request.princiapl.id in ADMINS.keys()
+        return self.request.principal.id not in ADMINS.keys()
 
     @property
     def url(self):
-         return self.view.application_url() + '/admins/' + self.request.principal.id + '/changepw'
+        return self.view.application_url() + '/admins/' + self.request.principal.id + '/changepw'
 
 
 class ChangePWAdminBenutzer(EditForm):

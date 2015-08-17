@@ -136,11 +136,11 @@ class MySQL(Location, SQLPublication, SecurePublication):
         if principal is not unauthenticated_principal:
             if username not in ADMINS.keys():
                 account = Admins[username]
-                principal.permissions = set(('manage.users',))
+                principal.permissions = set(('zope.View', 'manage.users',))
                 principal.department = account.department_id
             else:
                 principal.permissions = set(
-                    ('manage.users', 'manage.departments'))
+                    ('zope.View', 'manage.users', 'manage.departments'))
             principal.roles = set()
         return principal
 
