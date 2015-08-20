@@ -84,3 +84,15 @@ class AppIndex(uvclight.Page):
 
 class BGHeader(BGHeader):
     template = get_template('bgheader.cpt', __file__)
+
+
+from siguvtheme.uvclight.viewlets import DocumentActionsViewlet
+from .form import ChangePWAdminBenutzer
+from uvclight import view
+
+
+class DocumentActionsViewlet(DocumentActionsViewlet):
+    view(ChangePWAdminBenutzer)
+
+    def render(self):
+        return u""
