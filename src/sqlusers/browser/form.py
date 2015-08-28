@@ -403,7 +403,6 @@ class DeleteBenutzer(Form):
     @action(_(u'Löschen'))
     def handle_save(self):
         session = get_session('sqlusers')
-        import pdb; pdb.set_trace()
         if self.context.az == '000' and session.query(models.Benutzer).filter_by(login=self.context.login).count() > 1:
             self.flash(u'Bitte entfernen Sie zunächst erst alle Mitbenutzer, anschließend können sie den Hauptbenutzer löschen.')
             self.redirect(self.application_url())
