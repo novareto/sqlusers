@@ -194,6 +194,10 @@ class EditAdminBenutzer(EditForm):
             fields += Fields(IDepartmentChoice)
         return fields
 
+    def updateForm(self):
+        super(EditAdminBenutzer, self).updateForm()
+        self.fieldWidgets.get('form.field.password').template = get_template('password_edit.cpt', __file__)
+
     @property
     def actions(self):
         actions = EditForm.actions.omit('cancel')
@@ -399,6 +403,11 @@ class DeleteBenutzer(Form):
     @action(_(u'Löschen'))
     def handle_save(self):
         session = get_session('sqlusers')
+        import pdb; pdb.set_trace()
+        if self.context.az == '000' and session.query(models.Benutzer).filter_by(login=self.context.login).count() > 1:
+            self.flash(u'Bitte entfernen Sie zunächst erst alle Mitbenutzer, anschließend können sie den Hauptbenutzer löschen.')
+            self.redirect(self.application_url())
+            return 
         session.delete(self.context)
         session.flush()
         self.flash(_(u'Der Benutzer wurde aus dem System gelöscht.'))
