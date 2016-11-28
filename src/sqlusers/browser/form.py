@@ -3,9 +3,9 @@ import string
 import random
 
 from uvclight import get_template, MenuItem, viewletmanager, menu
-from ..interfaces import IVerifyPassword, IUser, IBenutzer, IDepartment
-from ..models import Admin, Benutzer, Department
-from ..utils import ADMINS, UsersContainer, AdminsContainer, DepartmentsContainer
+from ..interfaces import IVerifyPassword, IUser, IBenutzer
+from ..models import Benutzer
+from ..utils import ADMINS, UsersContainer
 from cromlech.sqlalchemy import get_session
 from dolmen.forms.base import SuccessMarker
 from dolmen.forms.crud.actions import DeleteAction, message, CancelAction
@@ -48,209 +48,15 @@ def genpw():
 _ = MessageFactory('kuvb')
 
 
-@provider(IContextSourceBinder)
-def department_choice(context):
-    session = get_session('sqlusers')
-    user = current_principal()
-    if user is not unauthenticated_principal:
-        if user.id in ADMINS.keys():
-            departments = session.query(Department).all()
-        else:
-            departments = [session.query(Department).get(user.department)]
-    else:
-        departments = []
-
-    return SimpleVocabulary([
-        SimpleTerm(value=dep.id, token=dep.id, title='%s' % dep.title)
-        for dep in departments])
-
-
-class IDepartmentChoice(Interface):
-    """
-    """
-    department_id = Choice(
-        title=u"Modulkennung",
-        source=department_choice,
-        required=True)
-
-
-@menuentry(IDocumentActions, order=10)
-class AddAdmin(Form):
-    context(AdminsContainer)
-    title(u'Admin Benutzer hinzufügen')
-    name('add')
-    require('manage.departments')
-
-    @property
-    def fields(self):
-        fields = Fields(IUser)
-        principal = current_principal()
-        if principal.id in ADMINS.keys():
-            fields += Fields(IDepartmentChoice)
-        return fields
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-    @action(_(u'Anlegen'))
-    def handle_save(self):
-        data, errors = self.extractData()
-        if errors:
-            self.flash(_(u'An error occurred.'))
-            return FAILURE
-
-        session = get_session('sqlusers')
-        if session.query(Admin).get(data['login']) is not None:
-            self.flash(u'Es gibt bereits einen Benutzer mit diesen Kriterien')
-            return
-
-        if 'department_id' not in data:
-            principal = current_principal()
-            data['department_id'] = principal.department
-
-        admin = Admin(**data)
-        session.add(admin)
-        session.flush()
-        session.refresh(admin)
-        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt.'))
-        self.redirect(self.application_url())
-        return SUCCESS
-
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
-
-
-class CPWME(MenuItem):
-    context(Interface)
-    title(u'Passwort ändern')
-    menu(IPersonalMenu)
-    require('manage.users')
-
-    @property
-    def available(self):
-        return self.request.principal.id not in ADMINS.keys()
-
-    @property
-    def url(self):
-        return self.view.application_url() + '/admins/' + self.request.principal.id + '/changepw'
-
-
-class ChangePWAdminBenutzer(EditForm):
-    context(IUser)
-    title(u'Passwort ändern')
-    name('changepw')
-    require('manage.users')
-
-    @property
-    def fields(self):
-        fields = Fields(IUser).select('password') + Fields(IVerifyPassword)
-        return fields
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-    @action('Speichern')
-    def handle_save(self):
-        data, errors = self.extractData()
-        if errors:
-            return
-        if not data['password'] == data['verif']:
-            self.errors.append(
-                Error(identifier='form.field.password',
-                      title='Passwort und Wiederholung sind nicht gleich.'))
-            self.errors.append(
-                Error(identifier='form.field.verif',
-                      title='Passwort und Wiederholung sind nicht gleich.'))
-            self.flash(u'Passwort und Wiederholung sind nicht gleich.')
-            return FAILURE
-
-        self.context.password = data['password']
-        self.flash(u'Ihr Passwort wurde neu gesetzt')
-        self.redirect(self.application_url())
-
-    @action('Abbrechen')
-    def handel_cancel(self):
-        self.flash(u'Die Aktion wurde abgebrochen.')
-        self.redirect(self.application_url())
-    
-
-
-@menuentry(IDocumentActions, order=10)
-class EditAdminBenutzer(EditForm):
-    context(IUser)
-    title(u'Admin-Benutzer bearbeiten')
-    name('edit')
-    require('manage.users')
-
-    @property
-    def fields(self):
-        fields = Fields(IUser)
-        principal = current_principal()
-        if principal.id in ADMINS.keys():
-            fields += Fields(IDepartmentChoice)
-        return fields
-
-    def updateForm(self):
-        super(EditAdminBenutzer, self).updateForm()
-        self.fieldWidgets.get('form.field.password').template = get_template('password_edit.cpt', __file__)
-
-    @property
-    def actions(self):
-        actions = EditForm.actions.omit('cancel')
-        return actions + MyCancelAction('Abbrechen') + DelForwardAction(title=u"Entfernen")
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-@menuentry(IDocumentActions, order=20)
-class DeleteAdminBenutzer(Form):
-    context(IUser)
-    name('delete')
-    title(u'Admin-Benutzer entfernen')
-    require('manage.users')
-    description = title = u"Wollen Sie wirklich löschen"
-
-    fields = Fields()
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-    @action(_(u'Löschen'))
-    def handle_save(self):
-        session = get_session('sqlusers')
-        session.delete(self.context)
-        session.flush()
-        self.flash(_(u'Der Benutzer wurde aus dem System gelöscht.'))
-        self.redirect(self.application_url())
-        return SUCCESS
-
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
-
-
 @menuentry(IDocumentActions, order=20)
 class AddBenutzer(Form):
     context(UsersContainer)
     title(u'Benuzter hinzufügen')
     name('add')
     require('manage.users')
-    ignoreContent = False
 
-    @property
-    def fields(self):
-        fields = Fields(IBenutzer).omit('department_id')
-        principal = current_principal()
-        if principal.id in ADMINS.keys():
-            fields += Fields(IDepartmentChoice)
-        return fields
+    ignoreContent = False
+    fields = Fields(IBenutzer)
 
     @property
     def action_url(self):
@@ -260,7 +66,7 @@ class AddBenutzer(Form):
         session = get_session('sqlusers')
         principal = current_principal()
         ret = ""
-        if principal.id in ADMINS.keys() or principal.department != "c":
+        if principal.id in ADMINS.keys():
             query = session.query(func.max(models.Benutzer.login))
             ret = 1000000
             if query.count() != 0:
@@ -275,7 +81,7 @@ class AddBenutzer(Form):
         super(AddBenutzer, self).updateForm()
         self.fieldWidgets.get('form.field.password').template = get_template('password.cpt', __file__)
         principal = current_principal()
-        if principal.id in ADMINS.keys() or principal.department != "c":
+        if principal.id in ADMINS.keys():
             login = self.fieldWidgets.get('form.field.login')
             login._htmlAttributes['readonly'] = 'True'
         self.fieldWidgets.get('form.field.az')._htmlAttributes['maxlength'] = 3
@@ -294,10 +100,6 @@ class AddBenutzer(Form):
             self.flash(u'Es gibt bereits einen Benutzer mit diesen Kriterien')
             return
 
-        if 'department_id' not in data:
-            principal = current_principal()
-            data['department_id'] = principal.department
-
         benutzer = Benutzer(**data)
         session.add(benutzer)
         session.flush()
@@ -305,7 +107,7 @@ class AddBenutzer(Form):
         az = benutzer.az
         if str(benutzer.az) != '000':
             az = ''
-        lname = '%s%s%s' % (benutzer.login, benutzer.department.id, az)
+        lname = '%s%s' % (benutzer.login, az)
         self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt. Der Anmeldename des Benutzers ist %s.' % lname))
         self.redirect(self.url(self.context, self.context.key_reverse(benutzer)))
         return SUCCESS
@@ -355,7 +157,7 @@ class EditBenutzer(EditForm):
     name('edit')
     require('manage.users')
 
-    fields = Fields(IBenutzer).omit('department_id')
+    fields = Fields(IBenutzer)
 
     @property
     def actions(self):
@@ -410,96 +212,6 @@ class DeleteBenutzer(Form):
         session.delete(self.context)
         session.flush()
         self.flash(_(u'Der Benutzer wurde aus dem System gelöscht.'))
-        self.redirect(self.application_url())
-        return SUCCESS
-
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
-
-
-@menuentry(IDocumentActions, order=10)
-class AddDepartment(Form):
-    context(DepartmentsContainer)
-    title(u'Modulkennung hinzufügen')
-    name('add')
-    require('manage.departments')
-
-    fields = Fields(IDepartment)
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-    @action(_(u'Anlegen'))
-    def handle_save(self):
-        data, errors = self.extractData()
-        if errors:
-            self.flash(_(u'An error occurred.'))
-            return FAILURE
-
-        department = Department(**data)
-        session = get_session('sqlusers')
-        if session.query(Department).get(data.get('id')):
-            self.flash('Es existiert bereits eine Modulkennung mit der ID %s.' % data.get('id'))
-            return FAILURE
-        session.add(department)
-        session.flush()
-        session.refresh(department)
-        self.flash(_(u'Die Aktion wurde erfolgreich ausgeführt.'))
-        self.redirect(self.url(self.context))
-        return SUCCESS
-
-    @action('Abbrechen')
-    def handle_cancel(self):
-        self.flash('Die Aktion wurde abgebrochen')
-        return self.redirect(self.application_url())
-
-
-@menuentry(IDocumentActions, order=10)
-class EditDepartment(EditForm):
-    context(IDepartment)
-    title(u'Modulkennung bearbeiten')
-    name('edit')
-    require('manage.departments')
-
-    fields = Fields(IDepartment)
-
-    @property
-    def actions(self):
-        actions = EditForm.actions.omit('cancel')
-        return actions + MyCancelAction('Abbrechen') + DelForwardAction(title=u"Entfernen")
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-
-@menuentry(IDocumentActions, order=20)
-class DeleteDepartment(Form):
-    context(IDepartment)
-    name('delete')
-    title(u'Modulkennung entfernen')
-    require('manage.users')
-    description = title = u"Wollen Sie wirklich löschen"
-
-    fields = Fields()
-
-    @property
-    def action_url(self):
-        return self.request.path
-
-    @action(_(u'Löschen'))
-    def handle_save(self):
-        if len(self.context.admin) != 0 or len(self.context.users) != 0:
-            self.flash('Es gibt noch Referenzen zu Benutzern oder Admins mit dieser Modulkennung')
-            return
-        session = get_session('sqlusers')
-        session.delete(self.context)
-      
-        session.flush()
-        self.flash(_(u'Das Objekt wurde erfolgreich gelöscht.'))
         self.redirect(self.application_url())
         return SUCCESS
 

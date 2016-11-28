@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import uvclight
-from .models import Base, Admin, Benutzer, Department
+from .models import Base, Benutzer
 from cromlech.browser import IPublicationRoot
 from dolmen.sqlcontainer import SQLContainer
 from grokcore.security import Permission
@@ -22,11 +22,6 @@ from zope.location import Location
 class ManageUsers(Permission):
     uvclight.name('manage.users')
     uvclight.title('Manage users')
-
-
-class ManageDepartments(Permission):
-    uvclight.name('manage.departments')
-    uvclight.title('Manage departments')
 
 
 class Site(object):
@@ -57,26 +52,7 @@ class UsersContainer(SQLContainer):
         return quote('%s %s' % (obj.login, obj.az))
 
 
-class AdminsContainer(SQLContainer):
-    model = Admin
-
-    def key_reverse(self, obj):
-        return obj.login
-
-
-class DepartmentsContainer(SQLContainer):
-    model = Department
-
-    def key_converter(self, id):
-        return unquote(id)
-
-    def key_reverse(self, obj):
-        return quote(obj.id)
-
-
 Users = UsersContainer(None, 'users', 'sqlusers')
-Admins = AdminsContainer(None, 'admins', 'sqlusers')
-Departments = DepartmentsContainer(None, 'departments', 'sqlusers')
 
 
 ADMINS = {
@@ -102,8 +78,8 @@ class AdminCredentials(uvclight.GlobalUtility):
 
 
 @implementer(IPublicationRoot)
-class MySQL(Location, SQLPublication, SecurePublication):
-    uvclight.traversable('admins', 'users', 'departments')
+class SQLApp(Location, SQLPublication, SecurePublication):
+    uvclight.traversable('users')
     layers = [IDGUVRequest, IBootstrapRequest]
     credentials = ['admin']
 
@@ -111,16 +87,6 @@ class MySQL(Location, SQLPublication, SecurePublication):
     def users(self):
         Users.__parent__ = self
         return Users
-
-    @property
-    def admins(self):
-        Admins.__parent__ = self
-        return Admins
-
-    @property
-    def departments(self):
-        Departments.__parent__ = self
-        return Departments
 
     def getSiteManager(self):
         return getGlobalSiteManager()
@@ -134,13 +100,7 @@ class MySQL(Location, SQLPublication, SecurePublication):
     def principal_factory(self, username):
         principal = SecurePublication.principal_factory(self, username)
         if principal is not unauthenticated_principal:
-            if username not in ADMINS.keys():
-                account = Admins[username]
-                principal.permissions = set(('zope.View', 'manage.users',))
-                principal.department = account.department_id
-            else:
-                principal.permissions = set(
-                    ('zope.View', 'manage.users', 'manage.departments'))
+            principal.permissions = set(('zope.View', 'manage.users'))
             principal.roles = set()
         return principal
 
@@ -148,4 +108,5 @@ class MySQL(Location, SQLPublication, SecurePublication):
     def create(cls, gc, **kws):
         kws['base'] = Base
         setSecurityPolicy(GenericSecurityPolicy)
-        return super(MySQL, cls).create(gc, **kws)
+        return super(SQLApp, cls).create(gc, **kws)
+

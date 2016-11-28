@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import uvclight
-from ..interfaces import IUser, IBenutzer, IDepartment
-from ..models import Benutzer, Admin
-from ..utils import UsersContainer, DepartmentsContainer
+from ..interfaces import IUser, IBenutzer
+from ..models import Benutzer
+from ..utils import UsersContainer
 from cromlech.browser import getSession
 from dolmen.message import receive
 from ul.auth import require
@@ -16,31 +16,12 @@ from zope.interface import Interface
 from siguvtheme.uvclight.viewlets import BGHeader
 
 
-class Departments(MenuItem):
-    uvclight.name('departments')
-    uvclight.title('Modulkennungen')
-    uvclight.order(30)
-    require('manage.departments')
-
-    menu(INavigationMenu)
-    url = action = '/departments'
-
-
 class Users(MenuItem):
     uvclight.title('Benutzermanagment')
     uvclight.name('users')
     menu(INavigationMenu)
     uvclight.order(20)
     url = action = '/users'
-
-
-class Admins(MenuItem):
-    uvclight.title('Administratoren-Management')
-    uvclight.name('admins')
-    menu(INavigationMenu)
-    uvclight.order(10)
-    require('manage.departments')
-    url = action = '/admins'
 
 
 class FlashMessages(uvclight.Viewlet):
@@ -84,15 +65,3 @@ class AppIndex(uvclight.Page):
 
 class BGHeader(BGHeader):
     template = get_template('bgheader.cpt', __file__)
-
-
-from siguvtheme.uvclight.viewlets import DocumentActionsViewlet
-from .form import ChangePWAdminBenutzer
-from uvclight import view
-
-
-class DocumentActionsViewlet(DocumentActionsViewlet):
-    view(ChangePWAdminBenutzer)
-
-    def render(self):
-        return u""

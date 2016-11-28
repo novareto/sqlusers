@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import uvclight
-from .form import IDepartmentChoice
-from ..interfaces import IBenutzer, IDepartment
+from ..interfaces import IBenutzer
 from ..models import Benutzer
-from ..utils import UsersContainer, DepartmentsContainer
+from ..utils import UsersContainer
 from cromlech.browser import getSession
 from dolmen.message import receive
 from ul.auth import require
@@ -20,16 +19,14 @@ class BenutzerIndex(DefaultView):
     context(Benutzer)
     require('manage.users')
 
-    fields = Fields(IBenutzer) + Fields(IDepartmentChoice)
+    fields = Fields(IBenutzer)
 
     @property
     def label(self):
         az = self.context.az
         if str(az) == '000':
             az = ""
-        return u"Anmeldename: %s%s%s" % (
-            self.context.login, self.context.department_id, az
-        )
+        return u"Anmeldename: %s%s" % (self.context.login, az)
 
     def update(self):
         for field in self.fields:
@@ -39,10 +36,3 @@ class BenutzerIndex(DefaultView):
     @uvclight.action(u'zur Startseite')
     def handle_back(self):
         self.redirect(self.application_url())
-
-
-class DepartmentsIndex(Page):
-    name('index')
-    require('manage.departments')
-    context(DepartmentsContainer)
-    template = uvclight.get_template('departments.cpt', __file__)

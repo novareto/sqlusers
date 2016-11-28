@@ -33,7 +33,7 @@ setup(name='sqlusers',
             'sqlusers = sqlusers.browser.resources:library',
          ],
          'paste.app_factory': [
-             'app = sqlusers.utils:MySQL.create',
+             'app = sqlusers.utils:SQLApp.create',
          ],
         'pytest11': [
             'sql_fixtures = sqlusers.tests.fixtures',

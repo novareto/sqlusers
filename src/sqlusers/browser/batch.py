@@ -122,10 +122,6 @@ class SearchAction(Action):
                 sorter = getattr(Benutzer, form.sorter)
                 query = query.order_by(sorter)
         principal = current_principal()
-        if principal.id not in ADMINS.keys():
-            query = query.filter(Benutzer.department_id == principal.department)
-
-
         total = query.count()
         query = query.limit(form.batch_size)
         query = query.offset(form.batch_start)
@@ -186,8 +182,8 @@ class SearchPage(Form):
         for result in self.search_results:
             yield {
                 'url': self.base + '/' + self.context.key_reverse(result),
-                'title': '%s%s%s %s (%s)' % (
-                    result.login, result.department.id, result.az, result.name1, result.email),
+                'title': '%s%s %s (%s)' % (
+                    result.login, result.az, result.name1, result.email),
                 'obj': result,
             }
 
