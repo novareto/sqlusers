@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import uvclight
-from .models import Base, Admin, Benutzer, Department
+
+from os import path
 from cromlech.browser import IPublicationRoot
+from cromlech.sessions.jwt import JWTCookieSession
+from cromlech.sessions.jwt import key_from_file
 from dolmen.sqlcontainer import SQLContainer
 from grokcore.security import Permission
 from siguvtheme.uvclight import IDGUVRequest
-from ul.auth import unauthenticated_principal
 from ul.auth import SecurePublication, ICredentials, GenericSecurityPolicy
+from ul.auth import unauthenticated_principal
 from ul.browser.decorators import with_zcml, with_i18n
 from ul.sql import SQLPublication
 from urllib import quote, unquote
@@ -15,8 +18,10 @@ from uvc.themes.btwidgets import IBootstrapRequest
 from zope.component import getGlobalSiteManager
 from zope.component.hooks import setSite
 from zope.interface import implementer
-from zope.security.management import setSecurityPolicy
 from zope.location import Location
+from zope.security.management import setSecurityPolicy
+
+from .models import Base, Admin, Benutzer, Department
 
 
 class ManageUsers(Permission):
@@ -148,4 +153,8 @@ class MySQL(Location, SQLPublication, SecurePublication):
     def create(cls, gc, **kws):
         kws['base'] = Base
         setSecurityPolicy(GenericSecurityPolicy)
-        return super(MySQL, cls).create(gc, **kws)
+        session_key = kws.get("session_key", "session")
+        key = key_from_file(path.join(kws.pop('root'), 'jwt.key'))
+        session_wrapper = JWTCookieSession(key, 60, environ_key=session_key)
+        app = super(MySQL, cls).create(gc, **kws)
+        return session_wrapper(app.__call__)
