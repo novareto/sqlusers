@@ -20,6 +20,7 @@ from zope.component.hooks import setSite
 from zope.interface import implementer
 from zope.location import Location
 from zope.security.management import setSecurityPolicy
+from cromlech.sqlalchemy import get_session
 
 from .models import Base, Admin, Benutzer, Department
 
@@ -61,12 +62,23 @@ class UsersContainer(SQLContainer):
     def key_reverse(self, obj):
         return quote('%s %s' % (obj.login, obj.az))
 
+    @property
+    def session(self):
+        return get_session('sqlusers') 
+
 
 class AdminsContainer(SQLContainer):
     model = Admin
 
     def key_reverse(self, obj):
         return obj.login
+
+    def key_converter(self, id):
+        return unquote(id)
+
+    @property
+    def session(self):
+        return get_session('sqlusers') 
 
 
 class DepartmentsContainer(SQLContainer):
@@ -78,10 +90,14 @@ class DepartmentsContainer(SQLContainer):
     def key_reverse(self, obj):
         return quote(obj.id)
 
+    @property
+    def session(self):
+        return get_session('sqlusers') 
 
-Users = UsersContainer(None, 'users', 'sqlusers')
-Admins = AdminsContainer(None, 'admins', 'sqlusers')
-Departments = DepartmentsContainer(None, 'departments', 'sqlusers')
+
+Users = UsersContainer(None, parent=None, name='users')
+Admins = AdminsContainer(None, parent=None, name="admins")
+Departments = DepartmentsContainer(None, parent=None, name='departments')
 
 
 ADMINS = {

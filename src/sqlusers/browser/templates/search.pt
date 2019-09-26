@@ -6,7 +6,7 @@
 	 >&rarr; Suche zurücksetzen</a>
     </p>
     <form novalidate="novalidate"
-	  tal:attributes="action view.base + '/' + view.__name__;
+	  tal:attributes="action view.base + '/';
 			  method view.formMethod;
 			  enctype view.enctype">
 

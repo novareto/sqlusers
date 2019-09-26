@@ -137,12 +137,13 @@ class SearchAction(Action):
 
         #if errors:
         #    return FAILURE
-
         if not data:
             form.errors.add(Error('form', 'You need at least one value'))
             return FAILURE
 
         form.search_len, form.search_results = self.search(form, data)
+        print form.search_results
+        print form.search_len
         return SUCCESS
 
 
@@ -183,17 +184,23 @@ class SearchPage(Form):
 
     @property
     def results(self):
+        def getId(result):
+            dep = getattr(result, 'department')
+            if dep:
+                return result.department.id
+            return ""
         for result in self.search_results:
             yield {
                 'url': self.base + '/' + self.context.key_reverse(result),
                 'title': '%s%s%s %s (%s)' % (
-                    result.login, result.department.id, result.az, result.name1, result.email),
+                    result.login, getId(result), result.az, result.name1, result.email),
                 'obj': result,
             }
 
     def updateActions(self):
         css.need()
         self.base = self.url(self.context)
+        self.base = self.base.replace('sqlusers', 'users')
         self.search_len = 0
         self.sorter = self.request.form.get('sorter', self.sorter)
         self.extracted = {}
